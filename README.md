@@ -54,16 +54,9 @@ Revert last migration:
 
 ### Web-service
 
-RUST_LOG=debug,hyper=warn,warp=warn
-RUST_LOG_FORMAT=plain
-PGHOST=...
-PGUSER=...
-PGPASSWORD=...
-PGDATABASE=operations_dev
-PGPOOLSIZE=4
-
 * `RUST_LOG` - logging parameters, as a start `debug,hyper=warn,warp=warn` is good enough
 * `RUST_LOG_FORMAT` - log format, either `plain` or `json`, default `json`
+* `PORT` - web server port, default 8080
 * `PGHOST` - Postgres host
 * `PGUSER` - Postgres user
 * `PGPASSWORD` - Postgres password
