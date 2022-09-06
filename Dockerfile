@@ -23,9 +23,4 @@ COPY --from=builder /usr/local/cargo/bin/consumer .
 
 COPY --from=builder /usr/src/service/migrations ./migrations/ 
 
-
-RUN echo "net.ipv4.tcp_keepalive_time = 20"  >> /etc/sysctl.conf
-RUN echo "net.ipv4.tcp_keepalive_intvl = 5"  >> /etc/sysctl.conf
-RUN echo "net.ipv4.tcp_keepalive_probes = 9" >> /etc/sysctl.conf
-
 CMD ["./service"]
