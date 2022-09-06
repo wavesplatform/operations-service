@@ -46,7 +46,7 @@ mod consumer {
         let init_updates_task = task::spawn(async move {
             let url = config.blockchain_updates.blockchain_updates_url;
             log::info!("Connecting to blockchain-updates at {}", url);
-            BlockchainUpdates::connect(url).await
+            BlockchainUpdates::connect(url, config.blockchain_updates.tcp_keepalive).await
         });
 
         let (storage, last_processed_height) = init_db_task.await??;

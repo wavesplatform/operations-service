@@ -34,6 +34,8 @@ pub struct Rollback {
 }
 
 mod updates_impl {
+    use std::time::Duration;
+
     use async_trait::async_trait;
     use tokio::{sync::mpsc, task};
 
@@ -47,8 +49,11 @@ mod updates_impl {
     pub struct BlockchainUpdates(BlockchainUpdatesApiClient<tonic::transport::Channel>);
 
     impl BlockchainUpdates {
-        pub async fn connect(blockchain_updates_url: String) -> Result<Self, anyhow::Error> {
-            let grpc_client = BlockchainUpdatesApiClient::connect(blockchain_updates_url).await?;
+        pub async fn connect(blockchain_updates_url: String, tcp_keepalive: Duration) -> Result<Self, anyhow::Error> {
+            let endpoint = tonic::transport::Endpoint::new(blockchain_updates_url)?;
+            let endpoint = endpoint.tcp_keepalive(Some(tcp_keepalive));
+            let conn = endpoint.connect().await?;
+            let grpc_client = BlockchainUpdatesApiClient::new(conn);
             Ok(BlockchainUpdates(grpc_client))
         }
     }

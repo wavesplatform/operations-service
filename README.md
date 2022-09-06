@@ -43,6 +43,7 @@ Revert last migration:
 * `RUST_LOG` - logging parameters, as a start `debug,hyper=warn,h2=warn,tower=warn` is good enough
 * `RUST_LOG_FORMAT` - log format, either `plain` or `json`, default `json`
 * `BLOCKCHAIN_UPDATES_URL` - for mainnet this is `https://blockchain-updates.waves.exchange`
+* `TCP_KEEPALIVE_SECS` - TCP Keepalive (seconds) for the GRPC connection, default 5s
 * `STARTING_HEIGHT` - starting blockchain height, for mainnet 1610030 is perfect, the very first `InvokeScript` transaction is at this height
 * `BATCH_MAX_DELAY_SEC` - maximum interval between database writes, default 10 seconds
 * `BATCH_MAX_SIZE` - maximum number of updates to batch, default 256

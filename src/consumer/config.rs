@@ -20,11 +20,27 @@ pub struct ConsumerConfig {
     pub batching: BatchingParams,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Clone)]
 pub struct BlockchainUpdatesConfig {
+    /// Blockchain updates service URL
+    pub blockchain_updates_url: String,
+
+    /// TCP Keepalive for the GRPC connection
+    pub tcp_keepalive: Duration,
+
+    /// Listen to blockchain updates starting from this blockchain height
+    pub starting_height: u32,
+}
+
+#[derive(Deserialize)]
+struct BlockchainUpdatesRawConfig {
     /// Blockchain updates service URL
     #[serde(rename = "blockchain_updates_url")]
     pub blockchain_updates_url: String,
+
+    /// TCP Keepalive (seconds) for the GRPC connection
+    #[serde(rename = "starting_height", default = "default_tcp_keepalive_secs")]
+    pub tcp_keepalive_secs: u32,
 
     /// Listen to blockchain updates starting from this blockchain height
     #[serde(rename = "starting_height", default = "default_starting_height")]
@@ -33,6 +49,10 @@ pub struct BlockchainUpdatesConfig {
 
 fn default_starting_height() -> u32 {
     0
+}
+
+fn default_tcp_keepalive_secs() -> u32 {
+    5
 }
 
 #[derive(Deserialize)]
@@ -61,7 +81,7 @@ pub enum ConfigError {
 }
 
 pub fn load() -> Result<ConsumerConfig, ConfigError> {
-    let blockchain_updates_config = envy::from_env::<BlockchainUpdatesConfig>()?;
+    let blockchain_updates_config = envy::from_env::<BlockchainUpdatesRawConfig>()?;
     let pg_config = envy::from_env::<PostgresConfig>()?;
     let batch_config = envy::from_env::<BatchingRawConfig>()?;
 
@@ -71,7 +91,11 @@ pub fn load() -> Result<ConsumerConfig, ConfigError> {
     }
 
     let config = ConsumerConfig {
-        blockchain_updates: blockchain_updates_config,
+        blockchain_updates: BlockchainUpdatesConfig {
+            blockchain_updates_url: blockchain_updates_config.blockchain_updates_url,
+            tcp_keepalive: Duration::from_secs(blockchain_updates_config.tcp_keepalive_secs as u64),
+            starting_height: blockchain_updates_config.starting_height,
+        },
         db: pg_config,
         batching: BatchingParams {
             max_updates: Some(batch_config.batch_max_size as usize),
