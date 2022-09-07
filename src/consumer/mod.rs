@@ -2,6 +2,7 @@
 
 mod batcher;
 mod config;
+mod metrics;
 mod model;
 mod storage;
 mod updates;
@@ -18,8 +19,11 @@ mod consumer {
     use diesel::{pg::PgConnection, Connection};
     use tokio::task;
 
+    use wx_warp::endpoints::StatsWarpBuilder;
+
     use crate::consumer::batcher;
     use crate::consumer::config::ConsumerConfig;
+    use crate::consumer::metrics::{DB_WRITE_TIME, HEIGHT, UPDATES_BATCH_SIZE, UPDATES_BATCH_TIME};
     use crate::consumer::storage::{PostgresStorage, Repo, Storage};
     use crate::consumer::updates::{BlockchainUpdate, BlockchainUpdates, BlockchainUpdatesSource};
 
@@ -53,6 +57,20 @@ mod consumer {
         let (storage, last_processed_height) = init_db_task.await??;
         let updates_source = init_updates_task.await??;
 
+        let metrics_port = config.metrics_port;
+        task::spawn(async move {
+            if let Some(height) = last_processed_height {
+                HEIGHT.set(height as i64);
+            }
+            StatsWarpBuilder::no_main_instance()
+                .add_metric(HEIGHT.clone())
+                .add_metric(UPDATES_BATCH_SIZE.clone())
+                .add_metric(UPDATES_BATCH_TIME.clone())
+                .add_metric(DB_WRITE_TIME.clone())
+                .run(metrics_port)
+                .await;
+        });
+
         let starting_height = last_processed_height.unwrap_or(config.blockchain_updates.starting_height);
         log::info!("Starting to fetch updates from height {}", starting_height);
 
@@ -79,6 +97,7 @@ mod consumer {
     async fn write_batch(batch: Vec<BlockchainUpdate>, storage: impl Storage) -> anyhow::Result<Option<u32>> {
         storage
             .transaction(|repo| {
+                let start = Instant::now();
                 let mut last_height = None;
                 for update in batch {
                     match update {
@@ -102,6 +121,12 @@ mod consumer {
                             repo.rollback_to_block(block_uid)?;
                         }
                     }
+                }
+                let elapsed = start.elapsed();
+                let elapsed_ms = elapsed.as_millis() as i64;
+                DB_WRITE_TIME.set(elapsed_ms);
+                if let Some(height) = last_height {
+                    HEIGHT.set(height as i64);
                 }
                 Ok(last_height)
             })
