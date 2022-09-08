@@ -25,8 +25,8 @@ tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 tonic = "0.5"
 warp = "0.3"
 waves-protobuf-schemas = { git = "https://github.com/wavesplatform/protobuf-schemas", tag = "v1.4.3" }
-wavesexchange_log = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_log/0.5.0" }
-wavesexchange_warp = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_warp/0.13.1" }
+wavesexchange_log = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_log/0.5.1" }
+wavesexchange_warp = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_warp/0.13.2" }
 
 [lib]
 name = "lib"
