@@ -75,7 +75,7 @@ mod endpoints {
 
     use super::Server;
     use crate::common::database::types::OperationType;
-    use crate::service::repo::{Operation, Page, Repo};
+    use crate::service::repo::{Operation, Page, Repo, Sort};
 
     const MAX_QUERY_LIMIT: u32 = 100;
 
@@ -97,6 +97,10 @@ mod endpoints {
         /// Contents of the `page_info/last_cursor` field of the previous response
         #[serde(rename = "after")]
         after: Option<String>,
+
+        /// Either 'asc' or 'desc', default is 'desc' (reverse blockchain order)
+        #[serde(rename = "sort")]
+        sort: Option<String>,
     }
 
     #[derive(Copy, Clone, PartialEq, Eq, Hash, Deserialize)]
@@ -141,11 +145,17 @@ mod endpoints {
                 start,
                 limit: query.limit.unwrap_or(MAX_QUERY_LIMIT),
             };
+            let sort = match query.sort.as_ref().map(String::as_str) {
+                None => Sort::default(),
+                Some("asc") => Sort::Asc,
+                Some("desc") => Sort::Desc,
+                Some(_) => return Err(GetOperationsError::InvalidSort.into()),
+            };
 
             // Fetch transactions from the database
             let repo = self.repo.clone();
             let (list, next) = repo
-                .fetch_operations(types, sender, page)
+                .fetch_operations(types, sender, page, sort)
                 .await
                 .map_err(|e| GetOperationsError::ServerError(e))?;
             log::debug!("fetched {} operations", list.len());
@@ -173,6 +183,8 @@ mod endpoints {
         InvalidAfter,
         #[error("Bad request: invalid 'limit'")]
         InvalidLimit,
+        #[error("Bad request: invalid 'sort'")]
+        InvalidSort,
         #[error("Internal server error")]
         ServerError(anyhow::Error),
     }
@@ -184,6 +196,7 @@ mod endpoints {
             match self {
                 GetOperationsError::InvalidAfter => StatusCode::BAD_REQUEST,
                 GetOperationsError::InvalidLimit => StatusCode::BAD_REQUEST,
+                GetOperationsError::InvalidSort => StatusCode::BAD_REQUEST,
                 GetOperationsError::ServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             }
         }

@@ -76,4 +76,4 @@ Revert last migration:
 
 Create new empty database. Then run migrator once. Start consumer, then start web-service.
 
-`http://localhost:8080/operations?sender=address&limit=10&after=...`
+`http://localhost:8080/operations?sender=address&sort=asc&limit=10&after=...`
