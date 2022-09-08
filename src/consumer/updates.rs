@@ -389,10 +389,10 @@ mod updates_impl {
                                 .ok_or(ConvertError("missing argument"))
                                 .map(|arg| match arg {
                                     Value::IntegerValue(v) => Ok(Arg::Integer(*v)),
-                                    Value::BinaryValue(v) => Ok(Arg::Binary(base58(v))),
+                                    Value::BinaryValue(v) => Ok(Arg::Binary(base64(v))),
                                     Value::StringValue(v) => Ok(Arg::String(v.to_owned())),
                                     Value::BooleanValue(v) => Ok(Arg::Boolean(*v)),
-                                    Value::CaseObj(v) => Ok(Arg::CaseObj(base58(v))),
+                                    Value::CaseObj(v) => Ok(Arg::CaseObj(base64(v))),
                                     Value::List(vv) => convert_args(&vv.items).map(Arg::List),
                                 })
                                 .and_then(|r| r)
@@ -422,6 +422,13 @@ mod updates_impl {
 
         fn base58(bytes: &[u8]) -> String {
             bs58::encode(bytes).into_string()
+        }
+
+        fn base64(bytes: &[u8]) -> String {
+            let mut buf = String::with_capacity(6 + 4 * (bytes.len() + 2) / 3);
+            buf.push_str("base64:");
+            base64::encode_config_buf(bytes, base64::STANDARD, &mut buf);
+            buf
         }
     }
 }
