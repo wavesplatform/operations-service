@@ -374,14 +374,14 @@ mod updates_impl {
                 } else {
                     &self.meta.payments
                 };
-                payments.iter().map(|p| convert_amount(p)).collect_vec()
+                payments.iter().map(convert_amount).collect_vec()
             }
 
             fn get_call(&self) -> Result<Call, ConvertError> {
                 let function = self.meta.function_name.clone();
                 let args = convert_args(&self.meta.arguments)?;
 
-                fn convert_args(args: &Vec<Argument>) -> Result<Vec<Arg>, ConvertError> {
+                fn convert_args(args: &[Argument]) -> Result<Vec<Arg>, ConvertError> {
                     args.iter()
                         .map(|arg| {
                             arg.value
@@ -393,7 +393,7 @@ mod updates_impl {
                                     Value::StringValue(v) => Ok(Arg::String(v.to_owned())),
                                     Value::BooleanValue(v) => Ok(Arg::Boolean(*v)),
                                     Value::CaseObj(v) => Ok(Arg::CaseObj(base58(v))),
-                                    Value::List(vv) => convert_args(&vv.items).map(|list| Arg::List(list)),
+                                    Value::List(vv) => convert_args(&vv.items).map(Arg::List),
                                 })
                                 .and_then(|r| r)
                         })

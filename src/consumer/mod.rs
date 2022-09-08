@@ -11,6 +11,7 @@ pub async fn main() -> Result<(), anyhow::Error> {
     consumer::run(config).await
 }
 
+#[allow(clippy::module_inception)]
 mod consumer {
     use std::time::Instant;
 

@@ -145,7 +145,7 @@ mod endpoints {
                 start,
                 limit: query.limit.unwrap_or(MAX_QUERY_LIMIT),
             };
-            let sort = match query.sort.as_ref().map(String::as_str) {
+            let sort = match query.sort.as_deref() {
                 None => Sort::default(),
                 Some("asc") => Sort::Asc,
                 Some("desc") => Sort::Desc,
@@ -157,7 +157,7 @@ mod endpoints {
             let (list, next) = repo
                 .fetch_operations(types, sender, page, sort)
                 .await
-                .map_err(|e| GetOperationsError::ServerError(e))?;
+                .map_err(GetOperationsError::ServerError)?;
             log::debug!("fetched {} operations", list.len());
 
             let res = OperationsResponse {
