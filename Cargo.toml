@@ -9,6 +9,7 @@ anyhow = "1.0"
 async-trait = "0.1"
 bs58 = "0.4"
 builder-pattern = "0.4"
+chrono = { version = "0.4", default-features = false }
 deadpool = { version = "=0.9.4", default-features = false, features = ["managed", "rt_tokio_1"] }
 deadpool-diesel = { version = "0.4.0-pre", default-features = false, features = ["postgres", "rt_tokio_1"], git = "https://github.com/bikeshedder/deadpool", branch = "feature/diesel-2" }
 diesel = { version = "2.0", default-features = false, features = ["postgres", "serde_json", "without-deprecated"] }

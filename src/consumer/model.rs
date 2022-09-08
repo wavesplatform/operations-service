@@ -12,8 +12,8 @@ pub struct Transaction {
     #[serde(rename = "origin_transaction_type")]
     pub tx_type: TransactionType,
     pub height: u32,
-    pub timestamp: u64,
-    //pub block_timestamp: u64, // Can't reliably get it without redesign
+    pub timestamp: String,
+    //pub block_timestamp: String, // Can't reliably get it without redesign
     pub fee: Amount,
     pub sender: String,
     pub sender_public_key: String,

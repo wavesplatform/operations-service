@@ -256,8 +256,8 @@ mod updates_impl {
                         op_type,
                         tx_type,
                         height: block_info.height,
-                        timestamp: tx_data.get_timestamp(),
-                        //block_timestamp: block_info.timestamp.unwrap_or_default(), //TODO unusable
+                        timestamp: convert_timestamp(tx_data.get_timestamp()),
+                        //block_timestamp: convert_timestamp(block_info.timestamp.unwrap_or_default()), //TODO unusable
                         fee: tx_data.get_fee().ok_or(ConvertError("fee"))?,
                         sender: base58(&meta.sender_address),
                         sender_public_key: base58(tx_data.get_sender_public_key()),
@@ -412,6 +412,12 @@ mod updates_impl {
                 Some(base58(&a.asset_id))
             };
             Amount::new(amount, asset_id)
+        }
+
+        fn convert_timestamp(ts: u64) -> String {
+            use chrono::{SecondsFormat, TimeZone, Utc};
+            Utc.timestamp_millis(ts as i64)
+                .to_rfc3339_opts(SecondsFormat::Millis, true)
         }
 
         fn base58(bytes: &[u8]) -> String {
