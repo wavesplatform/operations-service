@@ -50,6 +50,7 @@ Revert last migration:
 * `PGUSER` - Postgres user
 * `PGPASSWORD` - Postgres password
 * `PGDATABASE` - postgres database name
+* `METRICS_PORT` - port for web-server with application metrics
 
 
 ### Web-service
