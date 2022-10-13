@@ -62,12 +62,12 @@ mod consumer {
             if let Some(height) = last_processed_height {
                 HEIGHT.set(height as i64);
             }
-            StatsWarpBuilder::no_main_instance()
-                .add_metric(HEIGHT.clone())
-                .add_metric(UPDATES_BATCH_SIZE.clone())
-                .add_metric(UPDATES_BATCH_TIME.clone())
-                .add_metric(DB_WRITE_TIME.clone())
-                .run(metrics_port)
+            StatsWarpBuilder::new()
+                .with_metric(&*HEIGHT)
+                .with_metric(&*UPDATES_BATCH_SIZE)
+                .with_metric(&*UPDATES_BATCH_TIME)
+                .with_metric(&*DB_WRITE_TIME)
+                .run_blocking(metrics_port)
                 .await;
         });
 
