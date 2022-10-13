@@ -938,6 +938,7 @@ dependencies = [
  "itertools",
  "lazy_static",
  "prometheus",
+ "prost",
  "serde",
  "serde_json",
  "serde_repr",
