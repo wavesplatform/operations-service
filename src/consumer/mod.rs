@@ -19,7 +19,7 @@ mod consumer {
     use diesel::{pg::PgConnection, Connection};
     use tokio::task;
 
-    use wx_warp::endpoints::StatsWarpBuilder;
+    use wx_warp::endpoints::MetricsWarpBuilder;
 
     use crate::consumer::batcher;
     use crate::consumer::config::ConsumerConfig;
@@ -62,12 +62,13 @@ mod consumer {
             if let Some(height) = last_processed_height {
                 HEIGHT.set(height as i64);
             }
-            StatsWarpBuilder::new()
+            MetricsWarpBuilder::new()
                 .with_metric(&*HEIGHT)
                 .with_metric(&*UPDATES_BATCH_SIZE)
                 .with_metric(&*UPDATES_BATCH_TIME)
                 .with_metric(&*DB_WRITE_TIME)
-                .run_blocking(metrics_port)
+                .with_metrics_port(metrics_port)
+                .run_blocking()
                 .await;
         });
 
