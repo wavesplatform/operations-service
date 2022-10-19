@@ -18,6 +18,9 @@ pub struct ConsumerConfig {
 
     /// Batching of the database writes
     pub batching: BatchingParams,
+
+    /// Which port to use for the metrics web-server
+    pub metrics_port: u16,
 }
 
 #[derive(Deserialize, Clone)]
@@ -51,6 +54,16 @@ fn default_batch_max_delay_sec() -> u32 {
     10
 }
 
+#[derive(Deserialize)]
+struct MetricsRawConfig {
+    #[serde(rename = "metrics_port", default = "default_metrics_port")]
+    pub metrics_port: u16,
+}
+
+fn default_metrics_port() -> u16 {
+    8090
+}
+
 #[derive(Error, Debug)]
 pub enum ConfigError {
     #[error("configuration error: {0}")]
@@ -64,6 +77,7 @@ pub fn load() -> Result<ConsumerConfig, ConfigError> {
     let blockchain_updates_config = envy::from_env::<BlockchainUpdatesConfig>()?;
     let pg_config = envy::from_env::<PostgresConfig>()?;
     let batch_config = envy::from_env::<BatchingRawConfig>()?;
+    let metrics_config = envy::from_env::<MetricsRawConfig>()?;
 
     // Need this because later we are gonna cast it to i32
     if blockchain_updates_config.starting_height > i32::MAX as u32 {
@@ -77,6 +91,7 @@ pub fn load() -> Result<ConsumerConfig, ConfigError> {
             max_updates: Some(batch_config.batch_max_size as usize),
             max_delay: Some(Duration::from_secs(batch_config.batch_max_delay_sec as u64)),
         },
+        metrics_port: metrics_config.metrics_port,
     };
 
     Ok(config)

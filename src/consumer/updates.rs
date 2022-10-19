@@ -256,8 +256,8 @@ mod updates_impl {
                         op_type,
                         tx_type,
                         height: block_info.height,
-                        timestamp: tx_data.get_timestamp(),
-                        //block_timestamp: block_info.timestamp.unwrap_or_default(), //TODO unusable
+                        timestamp: convert_timestamp(tx_data.get_timestamp()),
+                        //block_timestamp: convert_timestamp(block_info.timestamp.unwrap_or_default()), //TODO unusable
                         fee: tx_data.get_fee().ok_or(ConvertError("fee"))?,
                         sender: base58(&meta.sender_address),
                         sender_public_key: base58(tx_data.get_sender_public_key()),
@@ -374,14 +374,14 @@ mod updates_impl {
                 } else {
                     &self.meta.payments
                 };
-                payments.iter().map(|p| convert_amount(p)).collect_vec()
+                payments.iter().map(convert_amount).collect_vec()
             }
 
             fn get_call(&self) -> Result<Call, ConvertError> {
                 let function = self.meta.function_name.clone();
                 let args = convert_args(&self.meta.arguments)?;
 
-                fn convert_args(args: &Vec<Argument>) -> Result<Vec<Arg>, ConvertError> {
+                fn convert_args(args: &[Argument]) -> Result<Vec<Arg>, ConvertError> {
                     args.iter()
                         .map(|arg| {
                             arg.value
@@ -389,11 +389,11 @@ mod updates_impl {
                                 .ok_or(ConvertError("missing argument"))
                                 .map(|arg| match arg {
                                     Value::IntegerValue(v) => Ok(Arg::Integer(*v)),
-                                    Value::BinaryValue(v) => Ok(Arg::Binary(base58(v))),
+                                    Value::BinaryValue(v) => Ok(Arg::Binary(base64(v))),
                                     Value::StringValue(v) => Ok(Arg::String(v.to_owned())),
                                     Value::BooleanValue(v) => Ok(Arg::Boolean(*v)),
-                                    Value::CaseObj(v) => Ok(Arg::CaseObj(base58(v))),
-                                    Value::List(vv) => convert_args(&vv.items).map(|list| Arg::List(list)),
+                                    Value::CaseObj(v) => Ok(Arg::CaseObj(base64(v))),
+                                    Value::List(vv) => convert_args(&vv.items).map(Arg::List),
                                 })
                                 .and_then(|r| r)
                         })
@@ -414,8 +414,21 @@ mod updates_impl {
             Amount::new(amount, asset_id)
         }
 
+        fn convert_timestamp(ts: u64) -> String {
+            use chrono::{SecondsFormat, TimeZone, Utc};
+            Utc.timestamp_millis(ts as i64)
+                .to_rfc3339_opts(SecondsFormat::Millis, true)
+        }
+
         fn base58(bytes: &[u8]) -> String {
             bs58::encode(bytes).into_string()
+        }
+
+        fn base64(bytes: &[u8]) -> String {
+            let mut buf = String::with_capacity(6 + 4 * (bytes.len() + 2) / 3);
+            buf.push_str("base64:");
+            base64::encode_config_buf(bytes, base64::STANDARD, &mut buf);
+            buf
         }
     }
 }

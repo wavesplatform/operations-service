@@ -50,6 +50,7 @@ Revert last migration:
 * `PGUSER` - Postgres user
 * `PGPASSWORD` - Postgres password
 * `PGDATABASE` - postgres database name
+* `METRICS_PORT` - port for web-server with application metrics
 
 
 ### Web-service
@@ -76,4 +77,4 @@ Revert last migration:
 
 Create new empty database. Then run migrator once. Start consumer, then start web-service.
 
-`http://localhost:8080/operations?sender=address&limit=10&after=...`
+`http://localhost:8080/operations?sender=address&sort=asc&limit=10&after=...`

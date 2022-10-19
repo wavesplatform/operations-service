@@ -1,21 +1,26 @@
 [package]
 name = "operations-service"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Alex Kordys <akordys@web3tech.ru>"]
 edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
 async-trait = "0.1"
+base64 = "0.13"
 bs58 = "0.4"
 builder-pattern = "0.4"
-deadpool = { version = "=0.9.4", default-features = false, features = ["managed", "rt_tokio_1"] }
-deadpool-diesel = { version = "0.4.0-pre", default-features = false, features = ["postgres", "rt_tokio_1"], git = "https://github.com/bikeshedder/deadpool", branch = "feature/diesel-2" }
+chrono = { version = "0.4", default-features = false }
+deadpool = { version = "0.9", default-features = false, features = ["managed", "rt_tokio_1"] }
+deadpool-diesel = { version = "0.4", default-features = false, features = ["postgres", "rt_tokio_1"] }
 diesel = { version = "2.0", default-features = false, features = ["postgres", "serde_json", "without-deprecated"] }
 diesel-derive-enum = { version = "2.0.0-rc.0", features = ["postgres"] }
 diesel_migrations = "2.0"
 envy = "0.4"
 itertools = "0.10"
+lazy_static = "1.4"
+prometheus = "0.13"
+prost = { version = "0.8", features = ["no-recursion-limit"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_repr = "0.1"
@@ -24,8 +29,8 @@ tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 tonic = "0.5"
 warp = "0.3"
 waves-protobuf-schemas = { git = "https://github.com/wavesplatform/protobuf-schemas", tag = "v1.4.3" }
-wavesexchange_log = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_log/0.5.0" }
-wavesexchange_warp = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_warp/0.13.1" }
+wavesexchange_log = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_log/0.5.1" }
+wavesexchange_warp = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_warp/0.14.0" }
 
 [lib]
 name = "lib"

@@ -12,6 +12,7 @@ use std::time::{Duration, Instant};
 use itertools::Itertools;
 use tokio::{sync::mpsc, task};
 
+use crate::consumer::metrics::{UPDATES_BATCH_SIZE, UPDATES_BATCH_TIME};
 use crate::consumer::updates::BlockchainUpdate;
 
 #[derive(Clone, Default)]
@@ -56,11 +57,11 @@ impl Batcher {
         while let Some(update) = self.input.recv().await {
             self.push_update(update);
             if self.need_flush() {
-                log::debug!(
-                    "Collected {} updates in {:?}",
-                    self.buffer.len(),
-                    self.last_flush.elapsed(),
-                );
+                let count = self.buffer.len();
+                let time = self.last_flush.elapsed();
+                log::debug!("Collected {} updates in {:?}", count, time,);
+                UPDATES_BATCH_SIZE.set(count as i64);
+                UPDATES_BATCH_TIME.set(time.as_millis() as i64);
                 self.flush().await?;
             }
         }

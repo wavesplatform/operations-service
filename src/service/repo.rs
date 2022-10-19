@@ -16,6 +16,7 @@ pub trait Repo {
         op_types: Option<Vec<OperationType>>,
         sender: Option<String>,
         page: Page<Self::TxUID>,
+        sort: Sort,
     ) -> anyhow::Result<(Vec<Operation<Self::TxUID>>, Option<Self::TxUID>)>;
 }
 
@@ -32,12 +33,19 @@ pub struct Page<TxUID> {
     pub limit: u32,
 }
 
+#[derive(Copy, Clone, Default)]
+pub enum Sort {
+    Asc,
+    #[default]
+    Desc,
+}
+
 pub mod postgres {
     use async_trait::async_trait;
     use diesel::{prelude::*, QueryDsl};
 
     use super::Repo;
-    use super::{Operation, OperationType, Page};
+    use super::{Operation, OperationType, Page, Sort};
     use crate::schema::transactions;
     use crate::service::db::pool::PgPool;
 
@@ -60,6 +68,7 @@ pub mod postgres {
             op_types: Option<Vec<OperationType>>,
             sender: Option<String>,
             page: Page<Self::TxUID>,
+            sort: Sort,
         ) -> anyhow::Result<(Vec<Operation<Self::TxUID>>, Option<Self::TxUID>)> {
             log::timer!("fetch_operations()");
             let conn = self.pgpool.get().await?;
@@ -80,12 +89,18 @@ pub mod postgres {
                     }
 
                     if let Some(from_uid) = page.start {
-                        query = query.filter(transactions::uid.ge(from_uid));
+                        match sort {
+                            Sort::Asc => query = query.filter(transactions::uid.ge(from_uid)),
+                            Sort::Desc => query = query.filter(transactions::uid.le(from_uid)),
+                        }
                     }
 
                     query = query.limit((page.limit + 1) as i64);
 
-                    query = query.order(transactions::uid);
+                    match sort {
+                        Sort::Asc => query = query.order(transactions::uid.asc()),
+                        Sort::Desc => query = query.order(transactions::uid.desc()),
+                    }
 
                     query.load::<Operation<i64>>(conn)
                 })
