@@ -68,7 +68,7 @@ mod consumer {
                 .with_metric(&*UPDATES_BATCH_TIME)
                 .with_metric(&*DB_WRITE_TIME)
                 .with_metrics_port(metrics_port)
-                .run_blocking()
+                .run_async()
                 .await;
         });
 
