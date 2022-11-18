@@ -390,7 +390,7 @@ mod updates_impl {
                                 .map(|arg| match arg {
                                     Value::IntegerValue(v) => Ok(Arg::Integer(*v)),
                                     Value::BinaryValue(v) => Ok(Arg::Binary(base64(v))),
-                                    Value::StringValue(v) => Ok(Arg::String(v.to_owned())),
+                                    Value::StringValue(v) => Ok(Arg::String(fix_unicode_string(v))),
                                     Value::BooleanValue(v) => Ok(Arg::Boolean(*v)),
                                     Value::CaseObj(v) => Ok(Arg::CaseObj(base64(v))),
                                     Value::List(vv) => convert_args(&vv.items).map(Arg::List),
@@ -416,7 +416,9 @@ mod updates_impl {
 
         fn convert_timestamp(ts: u64) -> String {
             use chrono::{SecondsFormat, TimeZone, Utc};
-            Utc.timestamp_millis(ts as i64)
+            Utc.timestamp_millis_opt(ts as i64)
+                .single()
+                .expect("timestamp")
                 .to_rfc3339_opts(SecondsFormat::Millis, true)
         }
 
@@ -429,6 +431,48 @@ mod updates_impl {
             buf.push_str("base64:");
             base64::encode_config_buf(bytes, base64::STANDARD, &mut buf);
             buf
+        }
+
+        /// This function is needed to fix bogus data stored in the blockchain.
+        /// Most of the string data in the blockchain is encoded in UTF-8, which is fine.
+        /// But sometimes there are strings encoded in UTF-16 with BOM marker.
+        /// Presumably these strings came from xml (svg) files that were stored as UTF-16.
+        /// Worse, when the raw data is parsed by `prost`, it gets converted to a bogus string
+        /// with messed up BOM in it represented as either "ÿþ" or "þÿ".
+        /// So this fn detects such strings and converts that mess back to a valid UTF-8.
+        fn fix_unicode_string(s: &str) -> String {
+            if s.starts_with("ÿþ") {
+                // UTF-16 LE
+                remove_broken_bom_and_parse_utf16(s, u16::from_le_bytes)
+            } else if s.starts_with("þÿ") {
+                // UTF-16 BE
+                remove_broken_bom_and_parse_utf16(s, u16::from_be_bytes)
+            } else {
+                s.to_owned()
+            }
+        }
+
+        fn remove_broken_bom_and_parse_utf16<F>(s: &str, convert: F) -> String
+        where
+            F: Fn([u8; 2]) -> u16,
+        {
+            debug_assert!(s.len() >= 4); // Because broken BOM is encoded as 4 bytes in UTF-8
+            let bytes = s.as_bytes();
+            let bytes = &bytes[4..];
+            parse_utf16(bytes, convert).unwrap_or_else(|()| char::REPLACEMENT_CHARACTER.to_string())
+        }
+
+        fn parse_utf16<F>(data: &[u8], convert: F) -> Result<String, ()>
+        where
+            F: Fn([u8; 2]) -> u16,
+        {
+            let data16 = data
+                .chunks(2)
+                .map(|e| e.try_into().map(|x| convert(x)))
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| ())?;
+
+            String::from_utf16(&data16).map_err(|_| ())
         }
     }
 }

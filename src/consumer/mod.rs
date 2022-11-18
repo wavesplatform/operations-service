@@ -111,7 +111,7 @@ mod consumer {
                                 let tx_type = tx.tx_type as u8;
                                 let sender = tx.sender.as_str();
                                 let tx_body = serde_json::to_value(&tx)?;
-                                //log::debug!("tx_json = {}", tx_body.to_string()); //TODO remove in the end
+                                //log::trace!("tx_json = {}", tx_body.to_string());
                                 repo.insert_tx(tx_id, block_uid, sender, tx_type, tx_body)?;
                             }
                             last_height = Some(append.height);
