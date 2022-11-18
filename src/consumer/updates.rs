@@ -416,7 +416,9 @@ mod updates_impl {
 
         fn convert_timestamp(ts: u64) -> String {
             use chrono::{SecondsFormat, TimeZone, Utc};
-            Utc.timestamp_millis(ts as i64)
+            Utc.timestamp_millis_opt(ts as i64)
+                .single()
+                .expect("timestamp")
                 .to_rfc3339_opts(SecondsFormat::Millis, true)
         }
 
