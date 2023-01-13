@@ -61,7 +61,7 @@ struct MetricsRawConfig {
 }
 
 fn default_metrics_port() -> u16 {
-    8090
+    9090
 }
 
 #[derive(Error, Debug)]

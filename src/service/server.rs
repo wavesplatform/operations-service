@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use warp::Filter;
-use wavesexchange_warp::endpoints::{livez, readyz, startz};
+use wavesexchange_warp::MetricsWarpBuilder;
 
 use crate::service::repo::Repo;
 
@@ -42,7 +42,7 @@ where
     Self: Send + Sync + 'static,
     R: Repo + Sync + Send,
 {
-    pub async fn run(self: Arc<Self>, port: u16) {
+    pub async fn run(self: Arc<Self>, port: u16, metrics_port: u16) {
         let with_self = warp::any().map(move || self.clone());
 
         let get_operations = warp::any()
@@ -53,14 +53,16 @@ where
             .and_then(Self::get_operations_handler)
             .recover(error_handling::error_handler);
 
-        let routes = livez()
-            .or(readyz())
-            .or(startz())
-            .or(get_operations)
+        let routes = get_operations
             .recover(error_handling::handle_rejection)
             .with(warp::filters::log::log("operations::server::access"));
 
-        warp::serve(routes).run(([0, 0, 0, 0], port)).await;
+        MetricsWarpBuilder::new()
+            .with_main_routes(routes)
+            .with_main_routes_port(port)
+            .with_metrics_port(metrics_port)
+            .run_async()
+            .await;
     }
 }
 

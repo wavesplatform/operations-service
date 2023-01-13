@@ -10,6 +10,9 @@ pub struct ServiceConfig {
     /// Server port
     pub port: u16,
 
+    /// Metrics port
+    pub metrics_port: u16,
+
     /// Postgres database config
     pub db: PostgresConfig,
 
@@ -23,6 +26,9 @@ struct RawConfig {
     #[serde(rename = "port", default = "default_port")]
     port: u16,
 
+    #[serde(rename = "metrics_port", default = "default_metrics_port")]
+    metrics_port: u16,
+
     /// Database pool size
     #[serde(rename = "pgpoolsize", default = "default_db_pool_size")]
     pub db_pool_size: u32,
@@ -30,6 +36,10 @@ struct RawConfig {
 
 fn default_port() -> u16 {
     8080
+}
+
+fn default_metrics_port() -> u16 {
+    9090
 }
 
 fn default_db_pool_size() -> u32 {
@@ -46,6 +56,7 @@ pub fn load() -> Result<ServiceConfig, ConfigError> {
 
     let config = ServiceConfig {
         port: raw_config.port,
+        metrics_port: raw_config.metrics_port,
         db: pg_config,
         db_pool_size: raw_config.db_pool_size,
     };
