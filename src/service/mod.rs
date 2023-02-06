@@ -11,6 +11,7 @@ pub async fn main() -> Result<(), anyhow::Error> {
     // Load configs
     let config = config::load()?;
     let port = config.port;
+    let metrics_port = config.metrics_port;
 
     // Create repo
     log::info!("Connecting to database: {:?}", config.db);
@@ -21,7 +22,7 @@ pub async fn main() -> Result<(), anyhow::Error> {
     let server = server::ServerBuilder::new().repo(repo).build().new_server();
 
     // Run the web server
-    Arc::new(server).run(port).await;
+    Arc::new(server).run(port, metrics_port).await;
 
     Ok(())
 }
