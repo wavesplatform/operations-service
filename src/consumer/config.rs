@@ -32,10 +32,18 @@ pub struct BlockchainUpdatesConfig {
     /// Listen to blockchain updates starting from this blockchain height
     #[serde(rename = "starting_height", default = "default_starting_height")]
     pub starting_height: u32,
+
+    /// On consumer start, rollback last stored height in the database to this number of blocks (default 1)
+    #[serde(default = "default_start_rollback_depth")]
+    pub start_rollback_depth: u32,
 }
 
 fn default_starting_height() -> u32 {
     0
+}
+
+fn default_start_rollback_depth() -> u32 {
+    1
 }
 
 #[derive(Deserialize)]
