@@ -37,8 +37,11 @@ mod updates_impl {
     use async_trait::async_trait;
     use tokio::{sync::mpsc, task};
 
-    use waves_protobuf_schemas::waves::events::grpc::{
-        blockchain_updates_api_client::BlockchainUpdatesApiClient, SubscribeEvent, SubscribeRequest,
+    use waves_protobuf_schemas::{
+        tonic,
+        waves::events::grpc::{
+            blockchain_updates_api_client::BlockchainUpdatesApiClient, SubscribeEvent, SubscribeRequest,
+        },
     };
 
     use super::{BlockchainUpdate, BlockchainUpdatesSource};

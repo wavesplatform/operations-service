@@ -65,6 +65,7 @@ pub mod database {
         use diesel_derive_enum::DbEnum;
 
         #[derive(DbEnum, Debug)]
+        #[ExistingTypePath = "crate::schema::sql_types::OperationType"]
         pub enum OperationType {
             InvokeScript,
         }
