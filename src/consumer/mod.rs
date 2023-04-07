@@ -34,10 +34,17 @@ mod consumer {
             let conn = PgConnection::establish(&config.db.database_url())?;
             let storage = PostgresStorage::new(conn);
             let last_height = storage
-                .transaction(|repo| {
+                .transaction(move |repo| {
                     let last_height = repo.last_height()?;
                     log::info!("Last height stored in database is {:?}", last_height);
-                    let rollback_to_height = last_height.and_then(|h| if h > 1 { Some(h - 1) } else { None });
+                    let rollback_to_height = last_height.and_then(|h| {
+                        let rb = config.blockchain_updates.start_rollback_depth;
+                        if rb > 0 && h >= rb {
+                            Some(h - rb)
+                        } else {
+                            None
+                        }
+                    });
                     if let Some(height) = rollback_to_height {
                         repo.rollback_to_height(height)?;
                         log::info!("Rolled back to height {} for safety", height);
