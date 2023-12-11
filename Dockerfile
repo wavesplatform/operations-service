@@ -1,4 +1,4 @@
-FROM rust:1.66 as builder
+FROM rust:1.74 as builder
 WORKDIR /usr/src/service
 
 RUN rustup component add rustfmt
@@ -10,7 +10,7 @@ COPY ./migrations ./migrations
 RUN cargo install --path .
 
 
-FROM debian:11 as runtime
+FROM debian:12 as runtime
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y curl openssl libssl-dev libpq-dev procps net-tools curl
