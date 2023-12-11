@@ -2,6 +2,7 @@ FROM rust:1.74 as builder
 WORKDIR /usr/src/service
 
 RUN rustup component add rustfmt
+RUN apt-get update && apt-get install -y protobuf-compiler
 
 COPY Cargo.* ./
 COPY ./src ./src
