@@ -1067,6 +1067,7 @@ dependencies = [
  "tokio",
  "warp",
  "waves-protobuf-schemas",
+ "wavesexchange_liveness",
  "wavesexchange_log",
  "wavesexchange_warp",
 ]
@@ -2182,6 +2183,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "wavesexchange_liveness"
+version = "0.1.0"
+source = "git+https://github.com/waves-exchange/wavesexchange-rs?tag=wavesexchange_liveness/0.2.0#936ec08a26d38f790302484162bc49af0b30ea15"
+dependencies = [
+ "diesel",
+ "tokio",
+ "wavesexchange_log",
+ "wavesexchange_warp",
+]
+
+[[package]]
 name = "wavesexchange_log"
 version = "0.5.1"
 source = "git+https://github.com/waves-exchange/wavesexchange-rs?tag=wavesexchange_log/0.5.1#8ccb6c3ef6b07c324203ed23109a2a5d80813c83"
@@ -2197,16 +2209,17 @@ dependencies = [
 
 [[package]]
 name = "wavesexchange_warp"
-version = "0.14.6"
-source = "git+https://github.com/waves-exchange/wavesexchange-rs?tag=wavesexchange_warp/0.14.6#55cdd53ee7b0da1b7069e86f86d4b785b55fa5b0"
+version = "0.14.9"
+source = "git+https://github.com/waves-exchange/wavesexchange-rs?tag=wavesexchange_warp/0.14.9#1f89140cc3a784ec5a808267f73c6b26624752b3"
 dependencies = [
  "futures",
  "lazy_static",
- "once_cell",
  "prometheus",
  "serde",
  "serde_json",
  "serde_qs",
+ "thiserror",
+ "tokio",
  "warp",
  "wavesexchange_log",
 ]
