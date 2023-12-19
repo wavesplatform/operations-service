@@ -17,8 +17,10 @@ mod consumer {
     use std::time::Instant;
 
     use diesel::{pg::PgConnection, Connection};
+    use std::time::Duration;
     use tokio::task;
 
+    use wavesexchange_liveness::channel;
     use wx_warp::endpoints::MetricsWarpBuilder;
 
     use crate::consumer::batcher;
@@ -27,17 +29,29 @@ mod consumer {
     use crate::consumer::storage::{PostgresStorage, Repo, Storage};
     use crate::consumer::updates::{BlockchainUpdate, BlockchainUpdates, BlockchainUpdatesSource};
 
+    const POLL_INTERVAL_SECS: u64 = 60;
+    const MAX_BLOCK_AGE: Duration = Duration::from_secs(300);
+
     pub(super) async fn run(config: ConsumerConfig) -> anyhow::Result<()> {
         // Initialize connection to the database and fetch latest height
+        let db_url = config.db.database_url();
+        let db_url_clone = db_url.clone();
         let init_db_task = task::spawn(async move {
             log::info!("Connecting to database: {:?}", config.db);
-            let conn = PgConnection::establish(&config.db.database_url())?;
+            let conn = PgConnection::establish(&db_url_clone)?;
             let storage = PostgresStorage::new(conn);
             let last_height = storage
-                .transaction(|repo| {
+                .transaction(move |repo| {
                     let last_height = repo.last_height()?;
                     log::info!("Last height stored in database is {:?}", last_height);
-                    let rollback_to_height = last_height.and_then(|h| if h > 1 { Some(h - 1) } else { None });
+                    let rollback_to_height = last_height.and_then(|h| {
+                        let rb = config.blockchain_updates.start_rollback_depth;
+                        if rb > 0 && h >= rb {
+                            Some(h - rb)
+                        } else {
+                            None
+                        }
+                    });
                     if let Some(height) = rollback_to_height {
                         repo.rollback_to_height(height)?;
                         log::info!("Rolled back to height {} for safety", height);
@@ -57,6 +71,7 @@ mod consumer {
         let (storage, last_processed_height) = init_db_task.await??;
         let updates_source = init_updates_task.await??;
 
+        let readiness_channel = channel(db_url, POLL_INTERVAL_SECS, MAX_BLOCK_AGE);
         let metrics_port = config.metrics_port;
         task::spawn(async move {
             if let Some(height) = last_processed_height {
@@ -68,6 +83,7 @@ mod consumer {
                 .with_metric(&*UPDATES_BATCH_TIME)
                 .with_metric(&*DB_WRITE_TIME)
                 .with_metrics_port(metrics_port)
+                .with_readiness_channel(readiness_channel)
                 .run_async()
                 .await;
         });
