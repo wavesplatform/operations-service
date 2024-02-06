@@ -51,7 +51,10 @@ mod updates_impl {
 
     impl BlockchainUpdates {
         pub async fn connect(blockchain_updates_url: String) -> Result<Self, anyhow::Error> {
-            let grpc_client = BlockchainUpdatesApiClient::connect(blockchain_updates_url).await?;
+            const MAX_MSG_SIZE: usize = 8 * 1024 * 1024; // 8 MB instead of the default 4 MB
+            let grpc_client = BlockchainUpdatesApiClient::connect(blockchain_updates_url)
+                .await?
+                .max_decoding_message_size(MAX_MSG_SIZE);
             Ok(BlockchainUpdates(grpc_client))
         }
     }
@@ -430,9 +433,10 @@ mod updates_impl {
         }
 
         fn base64(bytes: &[u8]) -> String {
+            use base64::engine::{general_purpose::STANDARD, Engine};
             let mut buf = String::with_capacity(6 + 4 * (bytes.len() + 2) / 3);
             buf.push_str("base64:");
-            base64::encode_config_buf(bytes, base64::STANDARD, &mut buf);
+            STANDARD.encode_string(bytes, &mut buf);
             buf
         }
 

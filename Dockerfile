@@ -1,4 +1,4 @@
-FROM rust:1.74 as builder
+FROM rust:1.75 as builder
 WORKDIR /usr/src/service
 
 RUN rustup component add rustfmt
@@ -8,7 +8,7 @@ COPY Cargo.* ./
 COPY ./src ./src
 COPY ./migrations ./migrations
 
-RUN cargo install --path .
+RUN cargo build --release
 
 
 FROM debian:12 as runtime
@@ -18,9 +18,9 @@ RUN apt-get update && apt-get install -y curl openssl libssl-dev libpq-dev procp
 # RUN curl -ks 'https://cert.host.server/ssl_certs/EnterpriseRootCA.crt' -o '/usr/local/share/ca-certificates/EnterpriseRootCA.crt'
 RUN /usr/sbin/update-ca-certificates
 
-COPY --from=builder /usr/local/cargo/bin/service .
-COPY --from=builder /usr/local/cargo/bin/migration .
-COPY --from=builder /usr/local/cargo/bin/consumer .
+COPY --from=builder /usr/src/service/target/release/service .
+COPY --from=builder /usr/src/service/target/release/migration .
+COPY --from=builder /usr/src/service/target/release/consumer .
 
 COPY --from=builder /usr/src/service/migrations ./migrations/ 
 
