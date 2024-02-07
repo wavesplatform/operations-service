@@ -7,17 +7,17 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 async-trait = "0.1"
-base64 = "0.13"
-bs58 = "0.4"
+base64 = "0.21"
+bs58 = "0.5"
 builder-pattern = "0.4"
 chrono = { version = "0.4", default-features = false }
-deadpool = { version = "0.9", default-features = false, features = ["managed", "rt_tokio_1"] }
-deadpool-diesel = { version = "0.4", default-features = false, features = ["postgres", "rt_tokio_1"] }
-diesel = { version = "2.0", default-features = false, features = ["postgres", "serde_json", "without-deprecated"] }
-diesel-derive-enum = { version = "~2.0", features = ["postgres"] } # version 2.1.0 does not compile
-diesel_migrations = "2.0"
+deadpool = { version = "0.10", default-features = false, features = ["managed", "rt_tokio_1"] }
+deadpool-diesel = { version = "0.5", default-features = false, features = ["postgres", "rt_tokio_1"] }
+diesel = { version = "2.1", default-features = false, features = ["postgres", "serde_json", "without-deprecated"] }
+diesel-derive-enum = { version = "2.1", features = ["postgres"] }
+diesel_migrations = "2.1"
 envy = "0.4"
-itertools = "0.10"
+itertools = "0.12"
 lazy_static = "1.4"
 prometheus = "0.13"
 serde = { version = "1.0", features = ["derive"] }
@@ -25,11 +25,11 @@ serde_json = "1.0"
 serde_repr = "0.1"
 thiserror = "1.0"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
-warp = "0.3"
-waves-protobuf-schemas = { git = "https://github.com/wavesplatform/protobuf-schemas", tag = "rust_v1.4.3-1" }
+warp = { version = "0.3", default-features = false }
+waves-protobuf-schemas = { git = "https://github.com/wavesplatform/protobuf-schemas", tag = "rust_v1.5.2" }
 wavesexchange_log = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_log/0.5.1" }
-wavesexchange_warp = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_warp/0.14.9" }
-wavesexchange_liveness = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_liveness/0.2.0"}
+wavesexchange_warp = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_warp/0.14.10" }
+wavesexchange_liveness = { git = "https://github.com/waves-exchange/wavesexchange-rs", tag = "wavesexchange_liveness/0.3.1"}
 
 [lib]
 name = "lib"

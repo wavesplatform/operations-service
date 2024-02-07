@@ -71,7 +71,7 @@ mod consumer {
         let (storage, last_processed_height) = init_db_task.await??;
         let updates_source = init_updates_task.await??;
 
-        let readiness_channel = channel(db_url, POLL_INTERVAL_SECS, MAX_BLOCK_AGE);
+        let readiness_channel = channel(db_url, POLL_INTERVAL_SECS, MAX_BLOCK_AGE, None);
         let metrics_port = config.metrics_port;
         task::spawn(async move {
             if let Some(height) = last_processed_height {
