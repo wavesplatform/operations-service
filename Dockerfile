@@ -14,7 +14,7 @@ RUN cargo build --release
 FROM debian:12 as runtime
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y curl openssl libssl-dev libpq-dev procps net-tools curl
+RUN apt-get update && apt-get install -y curl openssl libssl-dev libpq-dev procps net-tools curl postgresql-client
 # RUN curl -ks 'https://cert.host.server/ssl_certs/EnterpriseRootCA.crt' -o '/usr/local/share/ca-certificates/EnterpriseRootCA.crt'
 RUN /usr/sbin/update-ca-certificates
 
